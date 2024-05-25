@@ -18,6 +18,8 @@
 // PHYSTOP -- end RAM used by the kernel
 
 // qemu puts UART registers here in physical memory.
+#define MAXVA (1L << (9 + 9 + 9 + 12 - 1))
+#define PGSIZE 4096
 #define UART0 0x10000000L
 #define UART0_IRQ 10
 
@@ -51,6 +53,7 @@
 // in both user and kernel space.
 #define TRAMPOLINE (MAXVA - PGSIZE)
 
+
 // map kernel stacks beneath the trampoline,
 // each surrounded by invalid guard pages.
 #define KSTACK(p) (TRAMPOLINE - ((p)+1)* 2*PGSIZE)
@@ -65,3 +68,7 @@
 //   TRAPFRAME (p->trapframe, used by the trampoline)
 //   TRAMPOLINE (the same page as in the kernel)
 #define TRAPFRAME (TRAMPOLINE - PGSIZE)
+#define USYSCALL (TRAPFRAME - PGSIZE)
+struct usyscall{
+    int pid;
+};

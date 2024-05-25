@@ -88,6 +88,8 @@ walk(pagetable_t pagetable, uint64 va, int alloc)
   return &pagetable[PX(0, va)];
 }
 
+
+
 // Look up a virtual address, return the physical address,
 // or 0 if not mapped.
 // Can only be used to look up user pages.
@@ -320,6 +322,7 @@ uvmcopy(pagetable_t old, pagetable_t new, uint64 sz)
       panic("uvmcopy: page not present");
     pa = PTE2PA(*pte);
     flags = PTE_FLAGS(*pte);
+    //return a pa
     if((mem = kalloc()) == 0)
       goto err;
     memmove(mem, (char*)pa, PGSIZE);
@@ -438,5 +441,29 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return 0;
   } else {
     return -1;
+  }
+}
+void vmprint(pagetable_t pagetable,int level){
+  if(level<=0)
+    return;
+  if(level==3){
+    printf("page table %p\n",pagetable);
+  }
+  for(int i=0;i<512;i++){
+    pte_t pte = pagetable[i];
+    if(pte&PTE_V){
+      if(pte&(PTE_X|PTE_R|PTE_W)){
+        for(int n=level;n<=3;n++){
+          printf("..");
+        }
+        printf("%d: pte %p pa %p\n",i,pte,PTE2PA(pte));
+      }else{
+        for(int n=level;n<=3;n++){
+          printf("..");
+        }
+        printf("%d: pte %p pa %p\n",i,pte,PTE2PA(pte));
+        vmprint((pagetable_t)PTE2PA(pte),level-1);
+      }
+    }
   }
 }

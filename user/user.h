@@ -2,6 +2,7 @@ struct stat;
 struct rtcdate;
 struct sysinfo;
 
+
 // system calls
 int fork(void);
 int exit(int) __attribute__((noreturn));
@@ -24,6 +25,8 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int ugetpid(void);
+int pgaccess(void*, int,void *);
 #ifdef LAB_NET
 int connect(uint32, uint16, uint16);
 #endif

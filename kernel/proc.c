@@ -163,7 +163,13 @@ proc_pagetable(struct proc *p)
   pagetable = uvmcreate();
   if(pagetable == 0)
     return 0;
-
+  struct usyscall* mem = kalloc();
+  if(mappages(pagetable,USYSCALL,PGSIZE,(uint64)mem,PTE_X|PTE_R|PTE_U)!=0){
+    panic("mappages");
+  }else{
+    //printf("USYSCALL: %d,mem:%d\n",USYSCALL,(uint64)mem);
+  }
+  mem->pid = p->pid;
   // map the trampoline code (for system call return)
   // at the highest user virtual address.
   // only the supervisor uses it, on the way
@@ -172,7 +178,7 @@ proc_pagetable(struct proc *p)
               (uint64)trampoline, PTE_R | PTE_X) < 0){
     uvmfree(pagetable, 0);
     return 0;
-  }
+  } 
 
   // map the trapframe just below TRAMPOLINE, for trampoline.S.
   if(mappages(pagetable, TRAPFRAME, PGSIZE,
@@ -192,6 +198,7 @@ proc_freepagetable(pagetable_t pagetable, uint64 sz)
 {
   uvmunmap(pagetable, TRAMPOLINE, 1, 0);
   uvmunmap(pagetable, TRAPFRAME, 1, 0);
+  uvmunmap(pagetable,USYSCALL,1,1);
   uvmfree(pagetable, sz);
 }
 
